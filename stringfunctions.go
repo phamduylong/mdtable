@@ -2,6 +2,7 @@ package mdtable
 
 import (
 	"errors"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -72,4 +73,12 @@ func padCenter(originalString string, desiredLen int, paddingChar rune) (string,
 	}
 
 	return resStr, nil
+}
+
+func replaceAllInSlice(slice []string, oldString string, newString string) []string {
+	for idx := range slice {
+		slice[idx] = strings.ReplaceAll(slice[idx], oldString, newString)
+	}
+
+	return slice
 }
