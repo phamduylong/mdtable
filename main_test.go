@@ -50,39 +50,27 @@ func TestPadCenterOdd(t *testing.T) {
 }
 
 /* Conversion */
-const csvString = `First name,Last name,Email,Phone
-Jane,Smith,jane.smith@email.com,555-555-1212
-John,Doe,john.doe@email.com,555-555-3434
-Alice,Wonder,alice@wonderland.com,555-555-5656`
+var dataString = [][]string{
+	{"First name", "Last name", "Email", "Phone"},
+	{"Jane", "Smith", "jane.smith@email.com", "555-555-1212"},
+	{"John", "Doe", "john.doe@email.com", "555-555-3434"},
+	{"Alice", "Wonder", "alice@wonderland.com", "555-555-5656"},
+}
 
-const csvStringWithNarrowColumn = `#,first name,last name,email,gender
-1,Herman,Gribbin,hgribbin0@deliciousdays.com,Male
-2,Bing,Langthorne,blangthorne1@a8.net,Male
-3,Keith,Hansford,khansford2@reference.com,Male`
+var dataStringWithNarrowColumn = [][]string{
+	{"#", "first name", "last name", "email", "gender"},
+	{"1", "Herman", "Gribbin", "hgribbin0@deliciousdays.com", "Male"},
+	{"2", "Bing", "Langthorne", "blangthorne1@a8.net", "Male"},
+	{"3", "Keith", "Hansford", "khansford2@reference.com", "Male"},
+}
 
-const csvStringWithSemiColon = `First name;Last name;Email;Phone
-Jane;Smith;jane.smith@email.com;555-555-1212
-John;Doe;john.doe@email.com;555-555-3434
-Alice;Wonder;alice@wonderland.com;555-555-5656`
-
-const csvStringWithCommentLines = `First name,Last name,Email,Phone
-Jane,Smith,jane.smith@email.com,555-555-1212
-- this is a commented line    Jane,Smith,jane.smith@email.com,555-555-1212
-John,Doe,john.doe@email.com,555-555-3434
-- this is a commented line John,Doe,john.doe@email.com,555-555-3434
-Alice,Wonder,alice@wonderland.com,555-555-5656
-- this is a commented line  Alice,Wonder,alice@wonderland.com,555-555-5656`
-
-const csvStringWithWhiteSpaces = `First name,   Last name,  Email,Phone
-   Jane,   Smith,jane.smith@email.com,555-555-1212
-John,Doe,  john.doe@email.com,555-555-3434
-Alice,Wonder,    alice@wonderland.com,    555-555-5656`
-
-const csvStringWithPipeCharacters = `ID,Expression,Description
-1,A || B,Logical OR using pipe
-2,foo | bar | baz,Chained pipe values
-3,cmd1 | cmd2,Unix-style pipe between commands
-4,x | y == z,Comparison involving a pipe operator`
+var dataStringWithPipeCharacters = [][]string{
+	{"ID", "Expression", "Description"},
+	{"1", "A || B", "Logical OR using pipe"},
+	{"2", "foo | bar | baz", "Chained pipe values"},
+	{"3", "cmd1 | cmd2", "Unix-style pipe between commands"},
+	{"4", "x | y == z", "Comparison involving a pipe operator"},
+}
 
 func TestConvertGeneric(t *testing.T) {
 	var cfg Config
@@ -93,7 +81,7 @@ func TestConvertGeneric(t *testing.T) {
 |    John    |    Doe    |  john.doe@email.com  | 555-555-3434 |
 |   Alice    |  Wonder   | alice@wonderland.com | 555-555-5656 |`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert should not return a non-nil error")
 
@@ -112,7 +100,7 @@ func TestConvertWithNarrowColumnCenterAlign(t *testing.T) {
 |  2  |    Bing    | Langthorne |     blangthorne1@a8.net     |  Male  |
 |  3  |   Keith    |  Hansford  |  khansford2@reference.com   |  Male  |`
 
-	res, err := Convert(csvStringWithNarrowColumn, cfg)
+	res, err := Convert(dataStringWithNarrowColumn, cfg)
 
 	assert.Nil(t, err, "Convert with narrow column align center should not return a non-nil error")
 
@@ -129,7 +117,7 @@ func TestConvertWithNarrowColumnLeftAlign(t *testing.T) {
 | 2  | Bing       | Langthorne | blangthorne1@a8.net         | Male   |
 | 3  | Keith      | Hansford   | khansford2@reference.com    | Male   |`
 
-	res, err := Convert(csvStringWithNarrowColumn, cfg)
+	res, err := Convert(dataStringWithNarrowColumn, cfg)
 
 	assert.Nil(t, err, "Convert with narrow column align left should not return a non-nil error")
 
@@ -146,7 +134,7 @@ func TestConvertWithNarrowColumnRightAlign(t *testing.T) {
 |  2 |       Bing | Langthorne |         blangthorne1@a8.net |   Male |
 |  3 |      Keith |   Hansford |    khansford2@reference.com |   Male |`
 
-	res, err := Convert(csvStringWithNarrowColumn, cfg)
+	res, err := Convert(dataStringWithNarrowColumn, cfg)
 
 	assert.Nil(t, err, "Convert with narrow column align right should not return a non-nil error")
 
@@ -163,7 +151,7 @@ func TestLeftAlign(t *testing.T) {
 | John       | Doe       | john.doe@email.com   | 555-555-3434 |
 | Alice      | Wonder    | alice@wonderland.com | 555-555-5656 |`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert with left align should not return a non-nil error")
 
@@ -180,91 +168,9 @@ func TestRightAlign(t *testing.T) {
 |       John |       Doe |   john.doe@email.com | 555-555-3434 |
 |      Alice |    Wonder | alice@wonderland.com | 555-555-5656 |`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert with right align should not return a non-nil error")
-
-	assert.Equal(t, expected, res, STRINGS_SHOULD_BE_THE_SAME)
-}
-
-/* CSV READER CONFIG OPTIONS */
-func TestWithCustomDelimiter(t *testing.T) {
-	var cfg Config
-	cfg.CSVReaderConfig.Comma = ';'
-	expected := `| First name | Last name |        Email         |    Phone     |
-| :--------: | :-------: | :------------------: | :----------: |
-|    Jane    |   Smith   | jane.smith@email.com | 555-555-1212 |
-|    John    |    Doe    |  john.doe@email.com  | 555-555-3434 |
-|   Alice    |  Wonder   | alice@wonderland.com | 555-555-5656 |`
-
-	res, err := Convert(csvStringWithSemiColon, cfg)
-
-	assert.Nil(t, err, "Convert with custom delimiter should not return a non-nil error")
-
-	assert.Equal(t, expected, res, STRINGS_SHOULD_BE_THE_SAME)
-
-}
-
-func TestWithCustomComment(t *testing.T) {
-	var cfg Config
-	cfg.CSVReaderConfig.Comment = '-'
-	expected := `| First name | Last name |        Email         |    Phone     |
-| :--------: | :-------: | :------------------: | :----------: |
-|    Jane    |   Smith   | jane.smith@email.com | 555-555-1212 |
-|    John    |    Doe    |  john.doe@email.com  | 555-555-3434 |
-|   Alice    |  Wonder   | alice@wonderland.com | 555-555-5656 |`
-
-	res, err := Convert(csvStringWithCommentLines, cfg)
-
-	assert.Nil(t, err, "Convert with comment lines should not return a non-nil error")
-
-	assert.Equal(t, expected, res, STRINGS_SHOULD_BE_THE_SAME)
-}
-
-func TestWithCorrectCustomFieldsPerRecord(t *testing.T) {
-	var cfg Config
-	cfg.CSVReaderConfig.FieldsPerRecord = 4
-	expected := `| First name | Last name |        Email         |    Phone     |
-| :--------: | :-------: | :------------------: | :----------: |
-|    Jane    |   Smith   | jane.smith@email.com | 555-555-1212 |
-|    John    |    Doe    |  john.doe@email.com  | 555-555-3434 |
-|   Alice    |  Wonder   | alice@wonderland.com | 555-555-5656 |`
-
-	res, err := Convert(csvString, cfg)
-
-	assert.Nil(t, err, "Convert with correct fields per record setting should not return a non-nil error")
-
-	assert.Equal(t, expected, res, STRINGS_SHOULD_BE_THE_SAME)
-}
-
-func TestWithMismatchCustomFieldsPerRecord(t *testing.T) {
-	var cfg Config
-	cfg.CSVReaderConfig.FieldsPerRecord = 17
-	expected := `| First name | Last name |        Email         |    Phone     |
-| :--------: | :-------: | :------------------: | :----------: |
-|    Jane    |   Smith   | jane.smith@email.com | 555-555-1212 |
-|    John    |    Doe    |  john.doe@email.com  | 555-555-3434 |
-|   Alice    |  Wonder   | alice@wonderland.com | 555-555-5656 |`
-
-	res, err := Convert(csvString, cfg)
-
-	assert.NotNil(t, err, "Convert with mismatch fields per record setting should return an error")
-
-	assert.NotEqual(t, expected, res, STRINGS_SHOULD_BE_THE_SAME)
-}
-
-func TestWithTrimLeadingWhiteSpace(t *testing.T) {
-	var cfg Config
-	cfg.CSVReaderConfig.TrimLeadingSpace = true
-	expected := `| First name | Last name |        Email         |    Phone     |
-| :--------: | :-------: | :------------------: | :----------: |
-|    Jane    |   Smith   | jane.smith@email.com | 555-555-1212 |
-|    John    |    Doe    |  john.doe@email.com  | 555-555-3434 |
-|   Alice    |  Wonder   | alice@wonderland.com | 555-555-5656 |`
-
-	res, err := Convert(csvStringWithWhiteSpaces, cfg)
-
-	assert.Nil(t, err, "Convert with trim leading whitespace setting should not return an error")
 
 	assert.Equal(t, expected, res, STRINGS_SHOULD_BE_THE_SAME)
 }
@@ -280,7 +186,7 @@ func TestWithCaption(t *testing.T) {
 |    John    |    Doe    |  john.doe@email.com  | 555-555-3434 |
 |   Alice    |  Wonder   | alice@wonderland.com | 555-555-5656 |`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert with caption setting should not return an error")
 
@@ -298,7 +204,7 @@ func TestCompactConvertGeneric(t *testing.T) {
 |John|Doe|john.doe@email.com|555-555-3434|
 |Alice|Wonder|alice@wonderland.com|555-555-5656|`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert compact should not return a non-nil error")
 
@@ -316,7 +222,7 @@ func TestCompactConvertGenericLeftAlign(t *testing.T) {
 |John|Doe|john.doe@email.com|555-555-3434|
 |Alice|Wonder|alice@wonderland.com|555-555-5656|`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert compact left align should not return a non-nil error")
 
@@ -334,7 +240,7 @@ func TestCompactConvertGenericRightAlign(t *testing.T) {
 |John|Doe|john.doe@email.com|555-555-3434|
 |Alice|Wonder|alice@wonderland.com|555-555-5656|`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert compact right align should not return a non-nil error")
 
@@ -352,7 +258,7 @@ func TestConvertExcludeAllColumnsButOne(t *testing.T) {
 |    Doe    |
 |  Wonder   |`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert while excluded all columns but one should not return a non-nil error")
 
@@ -369,7 +275,7 @@ func TestConvertExcludeSomeColumns(t *testing.T) {
 |    Doe    | 555-555-3434 |
 |  Wonder   | 555-555-5656 |`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert with excluded columns should not return a non-nil error")
 
@@ -380,7 +286,7 @@ func TestConvertExcludeAllColumns(t *testing.T) {
 	var cfg Config
 	cfg.ExcludedColumns = []string{"Email", "Last name", "First name", "Phone"}
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert with all excluded columns should not return a non-nil error")
 
@@ -397,7 +303,7 @@ func TestConvertExcludeNoColumn(t *testing.T) {
 |    John    |    Doe    |  john.doe@email.com  | 555-555-3434 |
 |   Alice    |  Wonder   | alice@wonderland.com | 555-555-5656 |`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert with empty list of excluded columns should not return a non-nil error")
 
@@ -414,7 +320,7 @@ func TestConvertSortColumnsNone(t *testing.T) {
 |    John    |    Doe    |  john.doe@email.com  | 555-555-3434 |
 |   Alice    |  Wonder   | alice@wonderland.com | 555-555-5656 |`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert with sorted columns none should not return a non-nil error")
 
@@ -431,7 +337,7 @@ func TestConvertSortColumnsAscending(t *testing.T) {
 |  john.doe@email.com  |    John    |    Doe    | 555-555-3434 |
 | alice@wonderland.com |   Alice    |  Wonder   | 555-555-5656 |`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert with sorted columns ascending should not return a non-nil error")
 
@@ -448,7 +354,7 @@ func TestConvertSortColumnsDescending(t *testing.T) {
 | 555-555-3434 |    Doe    |    John    |  john.doe@email.com  |
 | 555-555-5656 |  Wonder   |   Alice    | alice@wonderland.com |`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert with sorted columns descending should not return a non-nil error")
 
@@ -458,7 +364,7 @@ func TestConvertSortColumnsDescending(t *testing.T) {
 func TestConvertSortColumnsCustom(t *testing.T) {
 	var cfg Config
 	cfg.SortColumns = Custom
-	cfg.SortFunction = func (a, b string) int {
+	cfg.SortFunction = func(a, b string) int {
 		return len(a) - len(b)
 	}
 
@@ -468,7 +374,7 @@ func TestConvertSortColumnsCustom(t *testing.T) {
 |  john.doe@email.com  | 555-555-3434 |    Doe    |    John    |
 | alice@wonderland.com | 555-555-5656 |  Wonder   |   Alice    |`
 
-	res, err := Convert(csvString, cfg)
+	res, err := Convert(dataString, cfg)
 
 	assert.Nil(t, err, "Convert with sorted columns custom should not return a non-nil error")
 
@@ -487,7 +393,7 @@ func TestEscapePipeCharacter(t *testing.T) {
 | 3  | cmd1 \| cmd2      | Unix-style pipe between commands     |
 | 4  | x \| y == z       | Comparison involving a pipe operator |`
 
-	res, err := Convert(csvStringWithPipeCharacters, cfg)
+	res, err := Convert(dataStringWithPipeCharacters, cfg)
 
 	assert.Nil(t, err, "Convert with pipe characters should not return a non-nil error")
 
