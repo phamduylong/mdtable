@@ -116,17 +116,16 @@ func populateColumnIndices(cfg Config, headerLine []string) Config {
 			cfg.orderedColumnsIndices = append(cfg.orderedColumnsIndices, i)
 		}
 	} else {
-		cfg.orderedColumnsIndices = getIndicesAfterSorting(cfg, headerLine)
+		getIndicesAfterSorting(&cfg, headerLine)
 	}
 
 	return cfg
 }
 
 // Get the indices of columns after sorted
-func getIndicesAfterSorting(cfg Config, headerLine []string) []int {
+func getIndicesAfterSorting(cfg *Config, headerLine []string) {
 	sortedColumns := make([]string, len(headerLine))
 	copy(sortedColumns, headerLine)
-	var columnsIndicesAfterSorting []int
 
 	switch cfg.SortColumns {
 	case Ascending:
@@ -142,8 +141,6 @@ func getIndicesAfterSorting(cfg Config, headerLine []string) []int {
 	}
 
 	for i := range sortedColumns {
-		columnsIndicesAfterSorting = append(columnsIndicesAfterSorting, slices.Index(headerLine, sortedColumns[i]))
+		cfg.orderedColumnsIndices = append(cfg.orderedColumnsIndices, slices.Index(headerLine, sortedColumns[i]))
 	}
-
-	return columnsIndicesAfterSorting
 }
